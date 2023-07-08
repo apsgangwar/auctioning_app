@@ -1,0 +1,49 @@
+version: '3'
+services:
+  auction_db_svc:
+    image: apsgangwar/auction_db_svc:latest
+    command:
+      --bind-address=* --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=$DB_PASSWORD
+    ports:
+      - '$DB_PORT:3306'
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-p$$DB_PASSWORD']
+      timeout: 5s
+      retries: 10
+
+  auction_supply_svc:
+    image: apsgangwar/auction_supply_svc:latest
+    env_file:
+      - .env
+    ports:
+      - '$SUPPLY_SVC_PORT:$SUPPLY_SVC_PORT'
+    depends_on:
+      auction_db_svc:
+        condition: service_healthy
+    restart: unless-stopped
+
+  auction_demand_svc:
+    image: apsgangwar/auction_demand_svc:latest
+    env_file:
+      - .env
+    ports:
+      - '$DEMAND_SVC_PORT:$DEMAND_SVC_PORT'
+    depends_on:
+      auction_db_svc:
+        condition: service_healthy
+    restart: unless-stopped
+
+  auction_main_svc:
+    image: apsgangwar/auction_main_svc:latest
+    env_file:
+      - .env
+    ports:
+      - '$AUCTION_SVC_PORT:$AUCTION_SVC_PORT'
+    depends_on:
+      - auction_db_svc
+      - auction_supply_svc
+      - auction_demand_svc
+    restart: unless-stopped
