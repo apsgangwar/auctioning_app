@@ -78,3 +78,14 @@ OR
 ```
 docker-compose down
 ```
+
+## Testing
+
+Currently, tests are added for `supply/svc` package in `supply/svc/svc_test.go`
+file. To test the code, run these command:
+
+```
+cd supply
+go mod download
+go test supply/svc
+```
